@@ -3,6 +3,10 @@ import { auth } from '../firebase';
 import axios from 'axios';
 import { UploadCloud, FileCheck, AlertCircle, Loader2, FileCode } from 'lucide-react';
 
+// --- PRODUCTION CONFIGURATION ---
+// In standard React (CRA/Vite), variables MUST start with REACT_APP_
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:8000";
+
 const FileUpload = ({ onAnalysisComplete }) => {
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
@@ -26,23 +30,41 @@ const FileUpload = ({ onAnalysisComplete }) => {
     setError('');
 
     try {
-      // Get the Firebase ID Token [cite: 8, 18]
-      const token = await auth.currentUser.getIdToken();
+      // 1. Check for authenticated user session
+      const user = auth.currentUser;
+      if (!user) {
+        throw new Error("Session expired. Please sign in again.");
+      }
+      
+      // 2. Force refresh the Firebase ID Token
+      // This ensures we aren't sending an expired 401-triggering token
+      const token = await user.getIdToken(true);
 
       const formData = new FormData();
       formData.append('file', file);
 
-      // Backend must be on Hugging Face or Localhost:8000 [cite: 11, 19]
-      const response = await axios.post('http://localhost:8000/analyze', formData, {
+      // 3. Dispatch to the Hybrid AI Backend
+      const response = await axios.post(`${API_BASE_URL}/analyze`, formData, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'multipart/form-data'
         }
       });
 
-      onAnalysisComplete(response.data);
+      if (response.data.error) {
+        setError(response.data.error);
+      } else {
+        onAnalysisComplete(response.data);
+      }
+
     } catch (err) {
-      setError(err.response?.data?.detail || 'Connection to AI Backend failed');
+      // 4. Capture 401s specifically for troubleshooting
+      if (err.response?.status === 401) {
+        setError("Unauthorized: Backend rejected the security token. Check Project ID alignment.");
+      } else {
+        setError(err.response?.data?.detail || err.message || 'Connection to AI Backend failed.');
+      }
+      console.error("Audit Upload Error:", err);
     } finally {
       setUploading(false);
     }
@@ -70,7 +92,7 @@ const FileUpload = ({ onAnalysisComplete }) => {
               <UploadCloud size={32} color="#6366f1" />
             </div>
             <h3>Click or Drag CSV here</h3>
-            <p>Upload documentation or FAQ datasets (20-200 rows) [cite: 45, 90]</p>
+            <p>Target: 20-200 rows for rule-based + AI audit</p>
           </div>
         )}
       </div>
@@ -94,7 +116,7 @@ const FileUpload = ({ onAnalysisComplete }) => {
         {uploading ? (
           <>
             <Loader2 size={18} style={styles.spin} />
-            <span>Analyzing Quality...</span>
+            <span>Analyzing via Llama 3.1...</span>
           </>
         ) : (
           <>
@@ -107,7 +129,7 @@ const FileUpload = ({ onAnalysisComplete }) => {
   );
 };
 
-// --- Modern Glassmorphism Styles ---
+// --- Glassmorphism UI Styles ---
 const styles = {
   container: { width: '100%', animation: 'fadeIn 0.5s ease' },
   dropZone: {
@@ -116,13 +138,14 @@ const styles = {
     borderRadius: '20px',
     padding: '40px',
     textAlign: 'center',
-    backgroundColor: '#ffffff',
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    backdropFilter: 'blur(10px)',
     transition: 'all 0.3s ease',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: '200px'
+    minHeight: '220px'
   },
   hiddenInput: {
     position: 'absolute',
@@ -168,7 +191,8 @@ const styles = {
     justifyContent: 'center',
     gap: '10px',
     boxShadow: '0 10px 15px -3px rgba(99, 102, 241, 0.3)',
-    transition: 'transform 0.2s ease'
+    transition: 'transform 0.2s ease',
+    fontSize: '1rem'
   },
   spin: { animation: 'spin 1s linear infinite' }
 };

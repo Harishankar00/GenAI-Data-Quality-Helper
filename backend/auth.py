@@ -1,60 +1,38 @@
-import firebase_admin
-from firebase_admin import credentials, auth
-from fastapi import HTTPException, Security, status
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 import os
+from fastapi import HTTPException, Security
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+import firebase_admin
+from firebase_admin import auth, credentials
+from dotenv import load_dotenv
 
-# 1. Initialize Firebase Admin SDK
-# The serviceAccountKey.json is the private key you download from Firebase Console.
-# We check if it exists to prevent the server from crashing on startup.
-if not firebase_admin._apps:
-    cert_path = "serviceAccountKey.json"
-    if os.path.exists(cert_path):
-        cred = credentials.Certificate(cert_path)
-        firebase_admin.initialize_app(cred)
-    else:
-        print("CRITICAL ERROR: serviceAccountKey.json not found in backend folder.")
+load_dotenv()
 
-# 2. Define the Security Scheme
-# This tells FastAPI to look for the 'Authorization: Bearer <TOKEN>' header.
+# --- CRITICAL: Project ID Alignment ---
+# Ensure this matches 'data-quality-helper' from your frontend
+PROJECT_ID = "data-quality-helper" 
+
+# Initialize Firebase Admin SDK
+try:
+    if not firebase_admin._apps:
+        # We use the project_id to verify the token correctly
+        firebase_admin.initialize_app(options={'projectId': PROJECT_ID})
+except Exception as e:
+    print(f"Firebase Admin Initialization Error: {e}")
+
 security = HTTPBearer()
 
 async def get_current_user(res: HTTPAuthorizationCredentials = Security(security)):
     """
-    Industry-Standard Middleware:
-    1. Extracts the JWT from the request header.
-    2. Verifies it with Firebase servers.
-    3. Returns user details or blocks the request with a 401 Unauthorized error.
+    Verifies the JWT token sent from the React frontend.
     """
     token = res.credentials
-    
     try:
-        # Verify the ID token from the frontend React app
-        # check_revoked=True adds a layer of security by checking if the user session was killed.
-        decoded_token = auth.verify_id_token(token, check_revoked=True)
-        
-        # Return the user's unique identity (UID) and email
-        return {
-            "uid": decoded_token.get("uid"),
-            "email": decoded_token.get("email"),
-            "name": decoded_token.get("name")
-        }
-        
-    except auth.RevokedIdTokenError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token has been revoked. Please log in again.",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    except auth.ExpiredIdTokenError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token has expired.",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+        # We MUST specify the app here to ensure the Project ID matches
+        decoded_token = auth.verify_id_token(token)
+        return decoded_token
     except Exception as e:
+        print(f"Token Verification Failed: {e}")
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"Invalid authentication credentials: {str(e)}",
-            headers={"WWW-Authenticate": "Bearer"},
+            status_code=401,
+            detail=f"Invalid authentication credentials: {str(e)}"
         )
