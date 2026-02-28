@@ -1,0 +1,56 @@
+Order_ID,Customer_Name,Email,Phone,City,Delivery_Time_Mins,Subscription_Tier,Total_Spent
+1,Alice Smith,alice@app.com,555-0100,New York,45,Pro,150.50
+2,Bob Johnson,bob@@yahoo.com,555-0101,NY,30,Basic,45.00
+3,Charlie Brown,charlie.b@gmail,555-0102,Los Angeles,-15,Pro,88.99
+4,Diana Prince,diana@themyscira.gov,,Washington D.C.,40,Enterprise,9999.99
+5,Eve Polastri,eve.p@mi6.co.uk,555-0104,London,25,,12.50
+6,Frank Castle,frank@punisher.net,123-ABC-4567,New York City,120,Basic,400.00
+7,Grace Hopper,grace@navy.mil,555-0106,Arlington,35,Pro,75.00
+8,,ghost@invisible.com,555-0107,Miami,20,Basic,25.00
+9,Hank Pym,hank@pymtech.com,555-0108,San Francisco,5,Enterprise,0.00
+10,Ivy Pepper,ivy.plant@gmail.com,555-0109,Gotham,999,Basic,15.99
+11,Jack Torrance,jack@overlook.com,555-0110,Denver,45,Pro,
+12,Karen Page,karen@nelsonmurdock.com,555-0111,Hell's Kitchen,30,Pro,55.50
+2,Bob Johnson,bob@@yahoo.com,555-0101,NY,30,Basic,45.00
+13,Leo DiCaprio,leo@oscars.org,555-0113,L.A.,40,Enterprise,850.00
+14,Mia Wallace,mia@jackrabbit.com,555-0114,LA,35,Pro,120.00
+15,Ned Stark,ned@winterfell.gov,555-0115,North,600,Basic,0.00
+16,Olivia Pope,olivia@gladiator.com,555-0116,D.C.,25,Pro,95.50
+17,Peter Parker,peter.p@dailybugle.com,555-0117,New York,15,Basic,10.00
+18,Quinn Fabray,quinn@glee.com,,Lima,22,Basic,35.00
+19,Rachel Green,rachel@centralperk.com,555-0119,NYC,45,Pro,85.00
+20,Steve Rogers,steve@avengers.com,555-0120,Brooklyn,105,Enterprise,120.00
+21,Tony Stark,tony@stark.com,555-0121,Malibu,10,Enterprise,5000.00
+22,Ursula Sea,ursula@ocean.net,555-0122,Atlantis,,Basic,45.00
+23,Victor Stone,victor@cyborg.io,555-0123,Detroit,20,Pro,88.50
+24,Wanda Maximoff,wanda@westview.com,555-0124,Westview,0,Pro,150.00
+25,Xena Warrior,xena@amphipolis.gr,555-0125,Athens,50,Basic,20.00
+26,Yoshi Dinosaur,yoshi@nintendo.jp,555-0126,Mushroom Kingdom,15,Pro,99.99
+27,Zelda Princess,zelda@hyrule.gov,555-0127,Hyrule,45,Enterprise,250.00
+28,Arthur Dent,arthur@vogon.com,555-0128,London,42,Basic,42.00
+29,Bruce Wayne,bruce@wayne.ent,555-0129,Gotham City,-10,Enterprise,99999.00
+30,Clark Kent,clark@dailyplanet.com,555-0130,Metropolis,5,Pro,15.00
+31,Dexter Morgan,dexter@miamipd.gov,555-0131,Miami,35,Basic,65.00
+32,Ellen Ripley,ellen@nostromo.space,,Space,900,Enterprise,0.00
+33,Fox Mulder,fox@fbi.gov,555-0133,Washington,45,Pro,45.50
+34,Geralt Rivia,geralt@kaermorhen.com,555-0134,Blaviken,120,Basic,15.00
+35,Homer Simpson,homer@snpp.com,555-0135,Springfield,30,Pro,12.50
+36,Indiana Jones,indy@marshall.edu,555-0136,Chicago,45,Basic,55.00
+37,James Bond,james@mi6.co.uk,555-0137,London,15,Enterprise,1500.00
+17,Peter Parker,peter.p@dailybugle.com,555-0117,New York,15,Basic,10.00
+38,Katniss Everdeen,katniss@district12.com,555-0139,Panem,60,Basic,25.00
+39,Luke Skywalker,luke@jedi.org,555-0140,Tatooine,800,Pro,0.00
+40,Michael Scott,michael@dundermifflin.com,555-0141,Scranton,20,Pro,45.00
+41,Neo Matrix,neo@zion.net,555-0142,The Matrix,1,Enterprise,999.00
+42,Optimus Prime,optimus@autobots.com,,Cybertron,45,Pro,500.00
+43,Percy Jackson,percy@camphalfblood.com,555-0144,New York,35,Basic,15.50
+44,Quentin Tarantino,quentin@director.com,555-0145,L.A.,40,Pro,250.00
+45,Rick Sanchez,rick@citadel.com,555-0146,Dimension C-137,-50,Enterprise,0.00
+46,Sarah Connor,sarah@skynet.com,555-0147,Los Angeles,25,Basic,45.00
+47,Tommy Shelby,tommy@peaky.com,555-0148,Birmingham,30,Pro,300.00
+48,Uhtred Bebbanburg,uhtred@wessex.com,555-0149,Winchester,150,Basic,10.00
+49,Vito Corleone,vito@godfather.com,555-0150,New York City,45,Enterprise,1500.00
+50,Walter White,walter@heisenberg.com,555-0151,Albuquerque,20,Pro,8000.00
+51,Xavier Charles,xavier@mutants.edu,,Westchester,15,Enterprise,500.00
+52,Yoda Master,yoda@jedi.org,555-0153,Dagobah,900,Pro,0.00
+53,Zuko Prince,zuko@firenation.gov,555-0154,Fire Nation,45,Basic,85.00
