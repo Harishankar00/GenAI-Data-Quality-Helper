@@ -1,90 +1,97 @@
 # NeuroStack AI: GenAI CSV Copilot
 ### **Track 3: Autonomous Data Quality & Correction Engine**
 
-NeuroStack AI is a high-performance, full-stack analytical tool designed to solve the "Dirty Data" problem. It employs a **Hybrid Intelligence Pipeline**—fusing deterministic rule-based heuristics with probabilistic LLM reasoning—to audit, detect, and suggest corrections for messy datasets.
+[![Frontend](https://img.shields.io/badge/Frontend-Deployed_on_Vercel-black?logo=vercel)](https://gen-ai-data-quality-helper.vercel.app/)
+[![Backend](https://img.shields.io/badge/Backend-Deployed_on_Hugging_Face-yellow?logo=huggingface)](https://harishankar000-genai-data-quality-helper.hf.space)
+[![Database](https://img.shields.io/badge/Database-Supabase-green?logo=supabase)](#)
+[![AI](https://img.shields.io/badge/AI-Llama_3.1-blue)](#)
 
+NeuroStack AI is a high-performance, full-stack analytical tool designed to solve the "Dirty Data" problem. It employs a Hybrid Intelligence Pipeline—fusing deterministic rule-based heuristics with probabilistic LLM reasoning—to audit, detect, and suggest corrections for messy CSV datasets.
 
+---
+
+## 🌐 Live Demo
+- Frontend: https://gen-ai-data-quality-helper.vercel.app/  
+- Backend (FastAPI): https://harishankar000-genai-data-quality-helper.hf.space
 
 ---
 
 ## 🏗️ System Architecture
-
-The application is built on a decoupled **Micro-Service Architecture**:
-
-1.  **The Sentinel Layer (Pandas/NumPy):** Executes high-speed, deterministic checks for statistical outliers (Z-Score > 3σ), duplicate row hashing, and null-value mapping.
-2.  **The Reasoning Layer (Llama 3.1 via LangChain):** Processes contextual anomalies. It identifies semantic inconsistencies (e.g., standardizing 'NY' to 'New York') and malformed strings (e.g., fixing `user@@gmail.com`) that traditional regex often fails to catch.
-3.  **The Sanitization Layer (FastAPI/Regex):** A custom-built post-processor that utilizes Regular Expressions and "Auto-Closer" logic to ensure LLM outputs are valid, double-quoted JSON, even if truncated.
+1. **Sentinel Layer (Pandas/NumPy):** High-speed deterministic checks (Z-score outliers, duplicate hashing, null mapping).  
+2. **Reasoning Layer (Llama-3.1 via LangChain):** Semantic anomaly detection and contextual corrections.  
+3. **Sanitization Layer (FastAPI/Regex):** Post-processor ensuring valid, double-quoted JSON outputs from LLMs.
 
 ---
 
 ## 🚀 Core Features
-
-### 🔍 Comprehensive Anomaly Detection
-* **Missing Values:** Automated null-report generation.
-* **Duplicate Detection:** Row-level redundancy identification.
-* **Statistical Outliers:** Z-Score based numerical anomaly flagging.
-* **Invalid Formats:** Context-aware repair of Email, Phone, and Date formats.
-* **Category Standardization:** Semantic grouping of inconsistent labels (e.g., L.A., Los Angeles, LA).
-
-### 🛠️ Interactive Audit Dashboard
-* **Real-time Analysis:** Instant feedback on file health.
-* **Corrected Preview Table:** Side-by-side comparison of original vs. suggested values.
-* **Confidence Scoring:** Probability-based labeling (High/Medium) for AI suggestions.
-* **One-Click Export:** Seamless transition from messy data to a clean CSV.
+- Missing value reporting, duplicate detection, Z-score outlier flagging  
+- Context-aware repairs for Email, Phone, Date formats  
+- Category standardization (e.g., L.A. → Los Angeles)  
+- Interactive Audit Dashboard: corrected preview, confidence scoring, one-click CSV export
 
 ---
 
 ## 💻 Tech Stack
-
-| Component | Technology |
-| :--- | :--- |
-| **Frontend** | React 18 (Hooks, Context API), Tailwind CSS |
-| **Backend** | FastAPI (Python 3.10+), Uvicorn |
-| **AI Orchestration** | LangChain, OpenAI-Compatible Routing |
-| **LLM Engine** | Llama-3.1-8B-Instruct (via Hugging Face Router) |
-| **Data Processing** | Pandas, NumPy |
-| **Authentication** | Firebase Identity Platform |
+- Frontend: React 18 (Vite, Hooks), Tailwind CSS  
+- Backend: FastAPI (Python 3.10+), Uvicorn  
+- AI Orchestration: LangChain  
+- LLM Engine: Llama-3.1-8B-Instruct  
+- Data: Pandas, NumPy  
+- Auth/Storage: Firebase / Supabase
 
 ---
 
 ## ⚙️ Installation & Setup
 
 ### Backend (FastAPI)
-1.  **Navigate to directory:** `cd backend`
-2.  **Environment Setup:**
-    ```bash
-    python -m venv venv
-    source venv/bin/activate  # Windows: venv\Scripts\activate
-    pip install -r requirements.txt
-    ```
-3.  **Environment Variables:** Create a `.env` file:
-    ```env
-    HUGGINGFACE_API_TOKEN=your_token_here
-    ```
-4.  **Launch:** `python main.py`
+1. Navigate to backend:
+```bash
+cd backend
+```
+2. Create and activate virtual environment:
+```bash
+python -m venv venv
+source venv/bin/activate   # Windows: venv\Scripts\activate
+```
+3. Install dependencies:
+```bash
+pip install -r requirements.txt
+```
+4. Create `.env` with:
+```env
+HUGGINGFACE_API_TOKEN=your_token_here
+```
+5. Launch:
+```bash
+uvicorn main:app --reload --port 7860
+```
 
-### Frontend (React)
-1.  **Navigate to directory:** `cd frontend`
-2.  **Install Dependencies:** `npm install`
-3.  **Configure Firebase:** Update `src/firebase.js` with your project credentials.
-4.  **Launch:** `npm start`
+### Frontend
+1. Navigate to frontend:
+```bash
+cd frontend
+```
+2. Install dependencies:
+```bash
+npm install
+```
+3. Update `src/firebase.js` / API endpoint if testing locally.
+4. Run dev server:
+```bash
+npm run dev
+```
 
 ---
 
-## 📊 Data Quality Implementation (Track 3 Requirements)
-
-NeuroStack AI strictly adheres to the Track 3 problem statement:
-* **Row Limit:** Enforced validation for 20–200 rows.
-* **Detection Logic:** Dual-layer (Deterministic + Probabilistic).
-* **UI Components:** Integrated "Audit Report" summary and "Correction Preview" table.
-* **Logic Fusion:** Rule-based logic handles volume/statistics; LLM handles nuance/formatting.
-
-
+## 📊 Track 3 Compliance
+- Enforces 20–200 row limit  
+- Dual-layer detection (Deterministic + Probabilistic)  
+- Integrated "Audit Report" and "Correction Preview" UI components
 
 ---
 
 ## 🛡️ Privacy & Security
-* **Memory-Only Processing:** CSV data is processed in-memory using `io.BytesIO`. No user data is persisted to disk, ensuring strict data privacy.
-* **Identity Management:** Secure authentication handled exclusively via Firebase JWT tokens.
+- In-memory CSV processing (no disk persistence)  
+- Authentication via Firebase/Supabase JWTs
+- Minimal data retention; production deployments must follow org security policies
 
----
