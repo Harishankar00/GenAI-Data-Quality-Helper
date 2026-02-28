@@ -3,7 +3,7 @@
 
 [![Frontend](https://img.shields.io/badge/Frontend-Deployed_on_Vercel-black?logo=vercel)](https://gen-ai-data-quality-helper.vercel.app/)
 [![Backend](https://img.shields.io/badge/Backend-Deployed_on_Hugging_Face-yellow?logo=huggingface)](https://harishankar000-genai-data-quality-helper.hf.space)
-[![Database](https://img.shields.io/badge/Database-Supabase-green?logo=supabase)](#)
+[![Database](https://img.shields.io/badge/Database-Firebase-yellow?logo=firebase)](#)
 [![AI](https://img.shields.io/badge/AI-Llama_3.1-blue)](#)
 
 NeuroStack AI is a high-performance, full-stack analytical tool designed to solve the "Dirty Data" problem. It employs a Hybrid Intelligence Pipeline—fusing deterministic rule-based heuristics with probabilistic LLM reasoning—to audit, detect, and suggest corrections for messy CSV datasets.
@@ -37,11 +37,18 @@ NeuroStack AI is a high-performance, full-stack analytical tool designed to solv
 - AI Orchestration: LangChain  
 - LLM Engine: Llama-3.1-8B-Instruct  
 - Data: Pandas, NumPy  
-- Auth/Storage: Firebase / Supabase
+- Auth/Storage: Firebase (Auth & Storage)
 
 ---
 
 ## ⚙️ Installation & Setup
+
+### Firebase (prerequisite)
+1. Create a Firebase project and enable:
+    - Authentication (Email/Password, Google, etc.)
+    - Cloud Storage (for optional CSV uploads)
+2. Create a Firebase service account (Project settings → Service accounts) and download the JSON key. Keep this secure.
+3. Set security rules and authentication providers appropriate for your deployment.
 
 ### Backend (FastAPI)
 1. Navigate to backend:
@@ -53,18 +60,21 @@ cd backend
 python -m venv venv
 source venv/bin/activate   # Windows: venv\Scripts\activate
 ```
-3. Install dependencies:
+3. Install dependencies (ensure firebase-admin is in requirements):
 ```bash
 pip install -r requirements.txt
 ```
-4. Create `.env` with:
+4. Create `.env` with required keys:
 ```env
 HUGGINGFACE_API_TOKEN=your_token_here
+FIREBASE_SERVICE_ACCOUNT_JSON_PATH=/path/to/firebase-service-account.json
+# or set FIREBASE_SERVICE_ACCOUNT_JSON with the JSON content (ensure secure storage)
 ```
 5. Launch:
 ```bash
 uvicorn main:app --reload --port 7860
 ```
+Note: Backend uses Firebase Admin SDK (service account) to verify tokens and access Storage if needed.
 
 ### Frontend
 1. Navigate to frontend:
@@ -75,11 +85,22 @@ cd frontend
 ```bash
 npm install
 ```
-3. Update `src/firebase.js` / API endpoint if testing locally.
+3. Configure Firebase for the web app:
+    - Update `src/firebase.js` with your Firebase config (apiKey, authDomain, projectId, storageBucket, etc.)
+    - Or store values in `.env.local`:
+```env
+REACT_APP_FIREBASE_API_KEY=your_api_key
+REACT_APP_FIREBASE_AUTH_DOMAIN=your_auth_domain
+REACT_APP_FIREBASE_PROJECT_ID=your_project_id
+REACT_APP_FIREBASE_STORAGE_BUCKET=your_storage_bucket
+REACT_APP_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+REACT_APP_FIREBASE_APP_ID=your_app_id
+```
 4. Run dev server:
 ```bash
 npm run dev
 ```
+4. Ensure frontend passes Firebase ID tokens to backend for authenticated API calls.
 
 ---
 
@@ -91,7 +112,8 @@ npm run dev
 ---
 
 ## 🛡️ Privacy & Security
-- In-memory CSV processing (no disk persistence)  
-- Authentication via Firebase/Supabase JWTs
-- Minimal data retention; production deployments must follow org security policies
+- In-memory CSV processing (no disk persistence by default)  
+- Authentication via Firebase JWTs (Backend verifies tokens with Firebase Admin SDK)  
+- Optional Cloud Storage for uploads with Firebase Storage rules  
+- Minimal data retention; production deployments must follow org security policies and secure service account keys
 
