@@ -1,9 +1,11 @@
 from fastapi import FastAPI, Depends, UploadFile, File, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from auth import get_current_user
-from services.cleaner import DataCleaner  # We will create this next
+from services.cleaner import DataCleaner 
 import pandas as pd
 import io
+import json
+import re
 
 app = FastAPI(
     title="GenAI Data Quality Helper API",
@@ -12,10 +14,9 @@ app = FastAPI(
 )
 
 # --- CORS Configuration ---
-# Required so your React frontend can communicate with this FastAPI backend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # For production, replace with your frontend URL
+    allow_origins=["*"],  
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -36,9 +37,8 @@ async def analyze_csv(
 ):
     """
     Step 1: Analyzes the uploaded CSV.
-    - Validates file type. [cite: 94]
-    - Detects missing values, duplicates, and outliers. [cite: 91, 92, 93, 96]
-    - Returns a JSON summary of issues found. [cite: 97]
+    - Uses Pandas for Rule-based checks.
+    - Uses LLM for format and category reasoning.
     """
     
     # 1. Validate File Format
@@ -49,22 +49,68 @@ async def analyze_csv(
         )
 
     try:
-        # 2. Read file into memory (FastAPI uses SpooledTemporaryFile for efficiency)
+        # 2. Read file into memory
         content = await file.read()
         df = pd.read_csv(io.BytesIO(content))
 
-        # Check constraint: 20-200 rows [cite: 90]
-        if len(df) < 1 or len(df) > 500: # Slightly relaxed for testing
-             return {"error": "File size must be between 20 and 500 rows for analysis."}
+        # Check row constraints (20-200 rows)
+        if len(df) < 20 or len(df) > 500: 
+             return {"error": f"File size is {len(df)} rows. Must be between 20 and 500 rows."}
 
-        # 3. Perform Rule-Based Analysis (Pandas)
+        # 3. Layer 1: Perform Rule-Based Analysis (Pandas)
         analysis_report = cleaner.detect_issues(df)
 
+        # 4. Layer 2: Get LLM Suggestions
+        raw_llm_response = await cleaner.run_ai_repair(df)
+        
+        # 5. Indestructible JSON Extractor & Sanitizer
+        suggestions = []
+        try:
+            clean_str = raw_llm_response.strip()
+            
+            # Remove Markdown code blocks if present
+            if '```json' in clean_str:
+                clean_str = clean_str.split('```json')[1].split('```')[0].strip()
+            elif '```' in clean_str:
+                clean_str = clean_str.split('```')[1].split('```')[0].strip()
+
+            # Ensure we start at the first bracket
+            if '[' in clean_str:
+                clean_str = clean_str[clean_str.find('['):]
+                
+            # --- THE AUTO-CLOSER ---
+            # If the AI cuts off mid-sentence (braces/brackets don't match)
+            if clean_str.count('[') > clean_str.count(']'):
+                last_complete_object = clean_str.rfind('}')
+                if last_complete_object != -1:
+                    # Chop off trailing junk and close the array manually
+                    clean_str = clean_str[:last_complete_object+1] + '\n]'
+                else:
+                    clean_str = "[]"
+
+            # Parse the cleaned string
+            raw_suggestions = json.loads(clean_str)
+            
+            # --- THE MUTE BUTTON ---
+            # Only keep rows where the AI actually fixed something
+            suggestions = [
+                s for s in raw_suggestions 
+                if str(s.get("original", "")).strip() != str(s.get("fix", "")).strip() 
+                and str(s.get("original", "")).strip() != ""
+            ]
+                
+        except Exception as parse_error:
+            print(f"Failed to parse LLM JSON: {parse_error}")
+            print(f"Raw AI Output was:\n{raw_llm_response}") 
+            suggestions = [] 
+
+        # 6. Final Combined Payload
         return {
             "filename": file.filename,
-            "user": user["email"],
+            "user": user.get("email", "Unknown"),
             "total_rows": len(df),
-            "issues_detected": analysis_report
+            "issues_detected": analysis_report,
+            "suggestions": suggestions  
         }
 
     except Exception as e:
@@ -75,19 +121,15 @@ async def apply_ai_cleaning(
     data: dict, 
     user: dict = Depends(get_current_user)
 ):
-    """
-    Step 2: Uses LLM reasoning to suggest fixes for the detected issues. [cite: 101, 104]
-    """
-    # This will call our LangChain pipeline in the next step
+    """Fallback endpoint for separate AI cleaning requests."""
     raw_df = pd.DataFrame(data['rows'])
     cleaned_data = await cleaner.run_ai_repair(raw_df)
     
     return {
         "message": "AI Cleaning Complete",
-        "cleaned_preview": cleaned_data # [cite: 102]
+        "cleaned_preview": cleaned_data 
     }
 
 if __name__ == "__main__":
     import uvicorn
-    # Industry Standard: Running with uvicorn for high performance
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

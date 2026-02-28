@@ -3,6 +3,7 @@ import { auth } from './firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import Auth from './components/Auth';
 import FileUpload from './components/FileUpload';
+import ResultTable from './components/ResultTable';
 import { LogOut, Sparkles, LayoutDashboard, Database } from 'lucide-react';
 
 function App() {
@@ -11,6 +12,7 @@ function App() {
   const [analysisData, setAnalysisData] = useState(null);
   const [viewVisible, setViewVisible] = useState(false);
 
+  // Authentication Listener
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
@@ -21,7 +23,7 @@ function App() {
     return () => unsubscribe();
   }, []);
 
-  // Global CSS Injection for the Loader Animation
+  // Global CSS Injection for Animations
   useEffect(() => {
     const styleSheet = document.createElement("style");
     styleSheet.innerText = `
@@ -73,8 +75,7 @@ function App() {
           <div style={styles.badge}>Track 3: Data Quality</div>
           <h1 style={styles.mainTitle}>GenAI CSV <span style={styles.gradientText}>Copilot</span></h1>
           <p style={styles.subtitle}>
-            Upload messy data to detect missing values, outliers, and formatting issues using 
-            rule-based logic and LLM reasoning[cite: 101, 104].
+            Upload messy data to detect missing values, outliers, invalid formats, and category inconsistencies using rule-based logic and LLM reasoning.
           </p>
         </div>
 
@@ -84,42 +85,57 @@ function App() {
           </div>
         ) : (
           <div style={{...styles.resultsWrapper, animation: 'fadeIn 0.5s ease-out'}}>
+            
+            {/* --- Audit Header --- */}
             <div style={styles.resultsHeader}>
               <LayoutDashboard size={20} color="#6366f1" />
               <h3 style={{margin: 0}}>Audit Report: {analysisData.filename}</h3>
             </div>
             
+            {/* --- Stats Grid --- */}
             <div style={styles.statsGrid}>
               <div style={styles.statCard}>
-                <span style={styles.statLabel}>Total Rows processed </span>
+                <span style={styles.statLabel}>Total Rows Processed</span>
                 <span style={styles.statValue}>{analysisData.total_rows}</span>
               </div>
               <div style={styles.statCard}>
-                <span style={styles.statLabel}>Issues Found [cite: 91]</span>
-                <span style={{...styles.statValue, color: '#ef4444'}}>{analysisData.issues_detected.length}</span>
+                <span style={styles.statLabel}>Rule-Based Issues Found</span>
+                <span style={{...styles.statValue, color: '#ef4444'}}>
+                  {analysisData.issues_detected?.length || 0}
+                </span>
               </div>
             </div>
 
+            {/* --- Rule-Based Detection Summary --- */}
             <div style={styles.issueList}>
-              {analysisData.issues_detected.length > 0 ? (
+              {analysisData.issues_detected && analysisData.issues_detected.length > 0 ? (
                 analysisData.issues_detected.map((issue, index) => (
                   <div key={index} style={styles.issueItem}>
                     <div style={styles.issueMarker}></div>
                     <div style={{flex: 1}}>
                       <strong style={{color: '#4338ca', fontSize: '0.95rem'}}>{issue.column}</strong>
                       <div style={{color: '#1e293b', fontSize: '0.9rem'}}>{issue.issue}</div>
-                      <div style={styles.countBadge}>{issue.count} occurrences detected [cite: 97]</div>
+                      <div style={styles.countBadge}>{issue.count} occurrences detected</div>
                     </div>
                   </div>
                 ))
               ) : (
                 <div style={styles.cleanState}>
                   <Database size={32} color="#22c55e" />
-                  <p>No issues detected! Your data quality looks solid.</p>
+                  <p>No basic issues detected! Your data structure looks solid.</p>
                 </div>
               )}
             </div>
 
+            {/* --- LLM Reasoning Results Table --- */}
+            <div style={{ padding: '20px 0', borderTop: '1px solid #e2e8f0', marginTop: '20px' }}>
+              <ResultTable 
+                data={analysisData} 
+                onExport={() => alert("Ready to download cleaned.csv! (Hook this up to an API endpoint)")} 
+              />
+            </div>
+
+            {/* --- Reset Action --- */}
             <button onClick={() => setAnalysisData(null)} style={styles.resetBtn}>
               Upload Another CSV
             </button>
@@ -161,7 +177,7 @@ const styles = {
   issueItem: { display: 'flex', alignItems: 'start', gap: '16px', padding: '16px', backgroundColor: '#fdf2f2', borderRadius: '12px', border: '1px solid #fee2e2', transition: 'transform 0.2s' },
   issueMarker: { width: '6px', height: '6px', backgroundColor: '#ef4444', borderRadius: '50%', marginTop: '8px' },
   countBadge: { fontSize: '0.75rem', color: '#991b1b', marginTop: '6px', fontWeight: '600' },
-  resetBtn: { width: '100%', padding: '14px', backgroundColor: '#1e293b', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: '700', cursor: 'pointer', transition: 'background 0.2s' },
+  resetBtn: { width: '100%', padding: '14px', backgroundColor: '#1e293b', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: '700', cursor: 'pointer', transition: 'background 0.2s', marginTop: '20px' },
   cleanState: { textAlign: 'center', padding: '40px', color: '#64748b', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }
 };
 
